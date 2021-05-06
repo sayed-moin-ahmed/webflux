@@ -50,8 +50,15 @@ public class EmployeeController {
     }
 
     @RequestMapping(value="/mono",method = RequestMethod.GET)
-    public Mono<String> getData(){
-        return Mono.just("Test");
+    public Mono<String> getMono(){
+        //return Mono.just("Test");
+        return Mono.empty();
+    }
+
+    @RequestMapping(value="/flux",method = RequestMethod.GET)
+    public Flux<String> getFlux(){
+        Flux<String> flux = Flux.just("A", "B", "C");
+        return flux;
     }
 
 }
