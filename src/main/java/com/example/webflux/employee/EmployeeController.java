@@ -49,4 +49,9 @@ public class EmployeeController {
         employeeService.delete(id).subscribe();
     }
 
+    @RequestMapping(value="/mono",method = RequestMethod.GET)
+    public Mono<String> getData(){
+        return Mono.just("Test");
+    }
+
 }
