@@ -28,5 +28,13 @@ public class FlowableSample {
                 .map(i -> {return Integer.toString(i);})
                 .forEach(System.out::println)
                 .dispose();
+
+        List sq =  new ArrayList();
+        Flowable.range(1,12)
+                .flatMap(v -> Flowable.just(v).subscribeOn(Schedulers.computation()).map(w->w*w))
+                .doOnError(ex-> ex.printStackTrace())
+                .doOnComplete(()->System.out.println("Completed"))
+                .blockingSubscribe(sq::add);
+        System.out.println(sq);
     }
 }
