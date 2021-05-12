@@ -11,8 +11,8 @@ import java.util.concurrent.Flow;
 import java.util.stream.Collectors;
 
 public class FlowableSample {
-    public static void main(String[] args){
-        List squares = new ArrayList();
+    public static void main(String[] args) throws Exception {
+        /*List squares = new ArrayList();
         Flowable.range(1,64)
                 .observeOn(Schedulers.computation())
                 .map(v -> v*v)
@@ -36,5 +36,25 @@ public class FlowableSample {
                 .doOnComplete(()->System.out.println("Completed"))
                 .blockingSubscribe(sq::add);
         System.out.println(sq);
+*/
+        runComputation();
+
+    }
+
+    public static void runComputation() throws Exception {
+        Flowable<String> source = Flowable.fromCallable(
+                () -> { //1
+                    return "Done";
+                });
+        source.doOnComplete(
+                () -> System.out.println("Completed runComputation"));
+
+        Flowable<String> background =
+                source.subscribeOn(Schedulers.io()); //2
+        Flowable<String> foreground =
+                background.observeOn(Schedulers.single()); //3
+        foreground.subscribe(System.out::println,
+                Throwable::printStackTrace); //4
+
     }
 }
