@@ -2,7 +2,12 @@ package com.example.webflux.rxjava;
 
 import io.reactivex.rxjava3.core.Flowable;
 import io.reactivex.rxjava3.core.Observable;
+import io.reactivex.rxjava3.core.ObservableSource;
+import io.reactivex.rxjava3.core.Observer;
+import io.reactivex.rxjava3.disposables.Disposable;
+import io.reactivex.rxjava3.internal.schedulers.ImmediateThinScheduler;
 import io.reactivex.rxjava3.schedulers.Schedulers;
+import reactor.core.Disposables;
 
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
@@ -31,6 +36,9 @@ public class FlowableSample1 {
         Observable.fromCallable(() -> "From callable").subscribe(new CustomObserver<>());
         Observable.fromFuture(CompletableFuture.supplyAsync(()->"From Completeable Future")).subscribe(new CustomObserver<>());
 
+        Observable.just(1, 2, 3).map(e->{System.out.println("Hey...");return Integer.toString(e);}).observeOn(Schedulers.io()).subscribe(new CustomObserver<>());
+        Observable.just(1, 2, 3).map(e->{System.out.println("Hey...");return Integer.toString(e);}).observeOn(Schedulers.computation()).subscribe(new CustomObserver<>());
+        Observable.just(1, 2, 3).map(e->{System.out.println("Hey...");return Integer.toString(e);}).observeOn(Schedulers.single()).subscribe(new CustomObserver<>());
     }
 
 }
