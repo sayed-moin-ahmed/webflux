@@ -9,6 +9,9 @@ import io.reactivex.rxjava3.internal.schedulers.ImmediateThinScheduler;
 import io.reactivex.rxjava3.schedulers.Schedulers;
 import reactor.core.Disposables;
 
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.PrintWriter;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
@@ -16,8 +19,24 @@ import java.util.stream.IntStream;
 
 public class FlowableSample1 {
     public static void main(String[] args) {
+        //observableSample();
+        flowableSample();
+    }
+
+    private static void flowableSample() {
         Flowable.fromArray(1, 2, 3, 4, 5).subscribe(System.out::println);//Array
-        Flowable.just("a", "b", "c").observeOn(Schedulers.computation()).map(String::intern).subscribe(System.out::println).dispose();//Thread
+        Flowable.just("a", "b", "c").subscribeOn(Schedulers.computation()).subscribe(System.out::println);//Thread
+        File file = new File("Test.txt");
+        try (PrintWriter pw = new PrintWriter(file)) {
+            Flowable.range(1, 100)
+                    .observeOn(Schedulers.newThread())
+                    .blockingSubscribe(pw::println);
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private static void observableSample() {
         Observable.just("Hello reactive World!").subscribe(System.out::println); // Just generate the data
         Observable.just("Hello World").subscribe(System.out::println, RuntimeException::new); // exception handling
         Observable.just("Hello World", "reactive!!!").subscribe(new CustomObserver<>()); // custom observer
