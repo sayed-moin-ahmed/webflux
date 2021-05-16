@@ -1,9 +1,6 @@
 package com.example.webflux.rxjava;
 
-import io.reactivex.rxjava3.core.Flowable;
-import io.reactivex.rxjava3.core.Observable;
-import io.reactivex.rxjava3.core.ObservableSource;
-import io.reactivex.rxjava3.core.Observer;
+import io.reactivex.rxjava3.core.*;
 import io.reactivex.rxjava3.disposables.Disposable;
 import io.reactivex.rxjava3.internal.schedulers.ImmediateThinScheduler;
 import io.reactivex.rxjava3.schedulers.Schedulers;
@@ -12,8 +9,10 @@ import reactor.core.Disposables;
 import java.io.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
+import java.util.stream.Stream;
 
 public class FlowableSample1 {
     public static void main(String[] args) {
@@ -25,7 +24,7 @@ public class FlowableSample1 {
         Flowable.fromArray(1, 2, 3, 4, 5).subscribe(System.out::println);//Array
         Flowable.just("a", "b", "c").subscribeOn(Schedulers.computation()).subscribe(System.out::println);//Thread
         File file = new File("Test.txt");
-        try (PrintWriter pw = new PrintWriter(file)) {
+       /* try (PrintWriter pw = new PrintWriter(file)) {
             Flowable.range(1, 100)
                     .observeOn(Schedulers.newThread())
                     .blockingSubscribe(pw::println);
@@ -37,7 +36,29 @@ public class FlowableSample1 {
             flow.observeOn(Schedulers.single()).blockingSubscribe(System.out::println);
         } catch (IOException e) {
             e.printStackTrace();
-        }
+        }*/
+        Single<BufferedReader> readerSingle = Single.just(file)
+                .observeOn(Schedulers.computation())
+                .map(FileReader::new)
+                .map(BufferedReader::new);
+        Flowable<String> flowable =
+                readerSingle.flatMapPublisher(reader -> //4
+                        Flowable.fromIterable( //5
+                                () ->
+                                        Stream.generate(readLineSupplier(reader)).iterator()
+                        ).takeWhile(line -> !"EOF".equals(line)));
+        flowable.doOnNext(it -> System.out.println("thread=" + Thread.currentThread().getName())) //7
+                .doOnError(ex -> ex.printStackTrace())
+                .blockingSubscribe(System.out::println);
+
+    }
+    private static Supplier<String>
+    readLineSupplier(BufferedReader reader) {
+        return () -> { try {
+            String line = reader.readLine();
+            return line == null ? "EOF" : line;
+        } catch (IOException ex)
+        { throw new RuntimeException(ex); }};
     }
 
     private static void observableSample() {
