@@ -9,9 +9,7 @@ import io.reactivex.rxjava3.internal.schedulers.ImmediateThinScheduler;
 import io.reactivex.rxjava3.schedulers.Schedulers;
 import reactor.core.Disposables;
 
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.PrintWriter;
+import java.io.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
@@ -32,6 +30,12 @@ public class FlowableSample1 {
                     .observeOn(Schedulers.newThread())
                     .blockingSubscribe(pw::println);
         } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        }
+        try (final BufferedReader br = new BufferedReader(new FileReader(file))) {
+            Flowable<String> flow = Flowable.fromPublisher(new FilePublisher(br));
+            flow.observeOn(Schedulers.single()).blockingSubscribe(System.out::println);
+        } catch (IOException e) {
             e.printStackTrace();
         }
     }
